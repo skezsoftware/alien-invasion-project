@@ -9,8 +9,10 @@ class Ship:
         self.settings = ai_game.settings
         self.screen_rect = ai_game.screen.get_rect()
 
-        #Load the ship image and get its rect.
-        self.image = pygame.image.load('images/ship.bmp')
+        # Load the ship image and resize it
+        self.image = pygame.image.load('images/elon.png')
+        # Adjust these numbers to make the image smaller. For example, (50, 50) or (80, 80)
+        self.image = pygame.transform.scale(self.image, (120, 120))  
         self.rect = self.image.get_rect()
 
         #start each new ship at the bottom center of the screen.
