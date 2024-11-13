@@ -15,8 +15,31 @@ class AlienInvasion:
     def __init__(self):
         """Initialize the game, and create game resources."""
         pygame.init()
+        pygame.mixer.init()  # Initialize the mixer
         self.clock = pygame.time.Clock()
         self.settings = Settings()
+
+        # Load sound effects
+        try:
+            self.laser_sound = pygame.mixer.Sound('sounds/laser1.wav')
+            self.laser_sound.set_volume(0.2)  # Adjust volume as needed
+            print("Laser sound loaded successfully")  # Debug print
+            
+            self.explosion_sound = pygame.mixer.Sound('sounds/explosion.wav')
+            self.explosion_sound.set_volume(0.5)  # Increased volume to 50%
+            print("Explosion sound loaded successfully")  # Debug print
+        except pygame.error as e:
+            print(f"Couldn't load sound: {e}")
+            self.laser_sound = None
+            self.explosion_sound = None
+
+        # Load and play background music
+        try:
+            pygame.mixer.music.load('sounds/battleThemeA.mp3')  # Replace with your actual filename
+            pygame.mixer.music.play(-1)  # Loop indefinitely
+            pygame.mixer.music.set_volume(0.3)  # Adjust volume (0.0 to 1.0)
+        except pygame.error as e:
+            print(f"Couldn't load music file: {e}")
 
         self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         self.settings.screen_width = self.screen.get_rect().width
@@ -118,6 +141,9 @@ class AlienInvasion:
         if len(self.bullets) < self.settings.bullets_allowed: 
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
+            # Play laser sound
+            if self.laser_sound:
+                self.laser_sound.play()
 
     def _check_keyup_events(self, event):
         if event.key == pygame.K_RIGHT:
@@ -215,14 +241,27 @@ class AlienInvasion:
     def _ship_hit(self):
         """Respond to the ship being hit by an alien."""
         if self.stats.ships_left > 0:
+            # Play explosion sound
+            if self.explosion_sound:
+                print("About to play explosion sound")  # Debug print
+                self.explosion_sound.play()
+                print("Explosion sound played")  # Debug print
+            else:
+                print("Explosion sound not loaded")  # Debug print
+                
             # Decrement ships_left.
             self.stats.ships_left -= 1
+            self.sb.prep_ships()
+            
             # Get rid of any remaining aliens and bullets.
             self.aliens.empty()
             self.bullets.empty()
+            
+            # Create a new fleet and center the ship
             self._create_fleet()
             self.ship.center_ship()
-            # Pause.
+            
+            # Pause to let the sound play
             sleep(0.5)
         else:
             self.game_active = False      
